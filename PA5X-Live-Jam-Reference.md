@@ -197,13 +197,8 @@ Harmony still switches on the Matrix.
 
 PA5X Chord MIDI (channel **16**) can drive MODX arp Parts only. That is separate from Pads and from Matrix sequences. The Chord Sequence **is** what those MIDI chord notes follow. Setup: [PA5X-MODX-M7-MIDI-Setup.md](PA5X-MODX-M7-MIDI-Setup.md).
 
-### No THRU jack — use MIDI OUT as Thru
+### Use the Midihub, not MODX Thru
 
-MODX M has no dedicated MIDI THRU. To feed a Jupiter-Xm (or anything else) from the same PA5X Chord stream:
+Put the Blokas Midihub in the middle: PA5X OUT → Midihub IN A, Midihub OUT A → MODX, OUT B → Jupiter. Filter so **only channel 16 notes** (and optional clock) reach the synths. MODX **MIDI Thru** stays **Off**.
 
-1. `[UTILITY]` → `Settings` → `MIDI I/O`
-2. MIDI IN/OUT = **MIDI** (not USB)
-3. **MIDI Thru** = **On**
-4. PA5X OUT → MODX IN, MODX OUT → Jupiter IN
-
-Thru Off = Jupiter only hears the MODX, not the PA5X. Details in the MIDI setup guide.
+Details and the Editor pipelines: [PA5X-MODX-M7-MIDI-Setup.md](PA5X-MODX-M7-MIDI-Setup.md).

@@ -82,35 +82,66 @@ Save this as something obvious, for example **MODX Arps**.
 
 Recall that preset whenever you connect the M7.
 
-### 5. Cable
+### 5. Cable (use the Midihub)
 
-PA5X **MIDI OUT** → MODX M7 **MIDI IN**
+Do **not** daisy-chain through the MODX if you have a Blokas **Midihub** (4 DIN IN / 4 DIN OUT). Put it in the middle as a star. It is faster and cleaner than MODX soft Thru, and you can strip everything except Chord notes.
 
-(Or USB-MIDI if that is how you already connect them. The channel plan is the same.)
+Power the Midihub from USB (wall supply is fine). It runs standalone after you **Store** the preset to Flash. The computer is only for the Editor.
 
-### 6. Daisy-chain another synth (Jupiter-Xm, etc.)
+#### Physical ports
 
-The MODX M has **MIDI IN** and **MIDI OUT** only. There is **no dedicated THRU jack**. The OUT jack can still pass the PA5X through:
+Rename them in the Editor so the panel matches the cables.
 
-`[UTILITY]` → `Settings` → `MIDI I/O`
-
-| Parameter | Setting |
+| Midihub port | Cable |
 |---|---|
-| MIDI IN/OUT | **MIDI** (5-pin). **MIDI Thru** is hidden if this is USB. |
-| **MIDI Thru** | **On** |
+| **MIDI IN A** | from PA5X **MIDI OUT** |
+| **MIDI OUT A** | to MODX **MIDI IN** |
+| **MIDI OUT B** | to Jupiter-Xm **MIDI IN** |
+| IN B / C / D | leave empty for now |
+| OUT C / D | spare |
 
-Cables:
+Leave **PA5X MIDI IN**, **MODX MIDI OUT**, and **Jupiter MIDI OUT** unplugged unless you later *want* those keyboards to talk back. Connecting both directions without a filter is how you get MIDI loops and stuck notes.
 
-PA5X **MIDI OUT** → MODX **MIDI IN**  
-MODX **MIDI OUT** → Jupiter (or the next synth) **MIDI IN**
+On the MODX: MIDI IN/OUT = **MIDI**, **MIDI Thru** = **Off**. The hub is doing the split.
 
-With **MIDI Thru On**, notes arriving at MODX IN are copied to MODX OUT. The PA5X Chord channel (16) still arrives as channel 16 on the Jupiter. The MODX still *plays* those notes internally. The MODX keyboard itself is **not** sent out that jack while Thru is On.
+#### Pipeline to build (Chord split)
 
-With **MIDI Thru Off**, OUT is only what the MODX *generates* (keys, Zones, arp MIDI Out). The PA5X will **not** reach the Jupiter.
+In Midihub Editor, three pipelines. MIDI flows left → right.
 
-Keep the chain to two synths. If Thru feels late or messy, skip the daisy-chain: use a small MIDI thru/splitter from the PA5X so MODX and Jupiter each get their own copy.
+1. **PA5X → bus**
+   - **From MIDI A**
+   - **Channel Filter**: drop channels **1–15** (tick those). Leave **16** unticked so Chord passes.
+   - **Filter**: drop Program Change, Control Change, Pitch Bend, aftertouch, SysEx, Active Sensing. **Do not** drop Note On / Note Off.
+   - Clock: if MODX/Jupiter arps should follow the PA5X style, **do not** drop Clock / Start / Continue / Stop. If they should keep their own tempo, drop those too.
+   - **To Virtual A**
 
-Do **not** also send PA5X Chord into the Jupiter by a second cable while Thru is On — that double-triggers.
+2. **Bus → MODX**
+   - **From Virtual A** → **To MIDI A**
+
+3. **Bus → Jupiter**
+   - **From Virtual A** → **To MIDI B**
+
+Virtual A is just a fan-out. Process once, copy to both synths.
+
+**Device → Store** so it comes back after power-off.
+
+#### Optional extras (only if you need them)
+
+| Want | Extra pipe |
+|---|---|
+| Jupiter wants channel 1, not 16 | On pipeline 3 only: **Channel Remap** In 16→16, Out 1→1 |
+| iPad / Live later as extra chord source | USB IN or DIN IN C → same Virtual A (or into PA5X MIDI IN instead — do **not** dual-feed both PA5X Chord IN *and* the synths) |
+| Monitor what is actually going out | Editor MIDI Monitor while a chord is held |
+
+The PA5X MIDI Preset should still send **only Chord on 16**. The Midihub filter is the safety net if Upper / Style tracks leak.
+
+### 6. Fallback without the hub (MODX OUT as Thru)
+
+The MODX M has **no dedicated THRU jack**. If the Midihub is not in the rig, OUT can act as Thru:
+
+`[UTILITY]` → `Settings` → `MIDI I/O` → MIDI IN/OUT = **MIDI**, **MIDI Thru** = **On**
+
+PA5X OUT → MODX IN, MODX OUT → Jupiter IN. Prefer the Midihub when it is available.
 
 ---
 
@@ -245,10 +276,12 @@ Do this after the first stored Performance.
 | One extra Part plays only while you are editing | That Keyboard Control–off Part is **selected** | Press `[PERFORMANCE]` (HOME) |
 | Changing Performance loses the setup | Not stored | Store a User Performance |
 | PA5X MIDI channels “forgot” Chord on 16 | MIDI Preset not saved / not recalled | Save and recall the MIDI Preset |
-| Right-hand PA5X playing also triggers MODX | Upper 1/2/3 still assigned on MIDI OUT | Set those tracks **Off** |
-| Arps will not run, or run at the wrong speed | MIDI Sync = MIDI but no clock from PA5X | Send clock from PA5X, or set MODX MIDI Sync = **Internal** |
+| Right-hand PA5X playing also triggers MODX | Upper 1/2/3 still assigned on MIDI OUT, or Midihub not filtering 1–15 | PA5X Upper Off **and** Midihub Channel Filter drop 1–15 |
+| Arps will not run, or run at the wrong speed | MIDI Sync = MIDI but no clock from PA5X / Midihub dropped Clock | Pass Clock/Start/Stop on the hub, or set MODX MIDI Sync = **Internal** |
 | Looking for Hybrid / MIDI I/O Mode | That menu is not on MODX M | Use MIDI I/O Channel + Keyboard Control + Tx/Rx Ch |
-| Jupiter (or next synth) silent on the chain | MIDI Thru Off, or MIDI IN/OUT = USB so Thru is hidden | MIDI IN/OUT = **MIDI**, **MIDI Thru** = **On** |
+| Jupiter silent, MODX works | Pipeline 3 missing, or wrong Midihub OUT | Virtual A → MIDI B, cable on OUT B |
+| Stuck notes / echo / double chords | MIDI loop (OUT of a synth patched back in) or Thru **and** hub both feeding Jupiter | One path only. Leave synth MIDI OUTs unplugged. MODX Thru **Off** |
+| Midihub “forgot” the patch after power-off | Preset only in RAM | **Device → Store** to Flash |
 
 ---
 
@@ -258,8 +291,9 @@ Do this after the first stored Performance.
 
 - [ ] PA5X MIDI OUT: Chord = **16**, other tracks Off on that port
 - [ ] PA5X MIDI Preset saved
-- [ ] PA5X MIDI OUT → MODX MIDI IN
-- [ ] Optional chain: MODX MIDI Thru **On**, MODX OUT → next synth IN
+- [ ] Midihub: PA5X OUT → IN A, OUT A → MODX, OUT B → Jupiter
+- [ ] Midihub: Channel Filter keep **16**, Filter notes only (+ clock if wanted), Store to Flash
+- [ ] MODX MIDI Thru **Off**
 - [ ] MODX MIDI I/O Channel = **1**
 - [ ] MODX Local Control = **On**
 - [ ] Optional: both instruments sharing MIDI clock
@@ -278,3 +312,4 @@ Do this after the first stored Performance.
 - [ ] PA5X chord + Arp On → only arps
 - [ ] PA5X chord + Arp Off → silence
 - [ ] MODX keys → only hand-played Parts
+- [ ] Same PA5X chord also reaches Jupiter (and only as chord notes, not Upper/Style)
