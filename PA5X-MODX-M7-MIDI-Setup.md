@@ -88,6 +88,30 @@ PA5X **MIDI OUT** → MODX M7 **MIDI IN**
 
 (Or USB-MIDI if that is how you already connect them. The channel plan is the same.)
 
+### 6. Daisy-chain another synth (Jupiter-Xm, etc.)
+
+The MODX M has **MIDI IN** and **MIDI OUT** only. There is **no dedicated THRU jack**. The OUT jack can still pass the PA5X through:
+
+`[UTILITY]` → `Settings` → `MIDI I/O`
+
+| Parameter | Setting |
+|---|---|
+| MIDI IN/OUT | **MIDI** (5-pin). **MIDI Thru** is hidden if this is USB. |
+| **MIDI Thru** | **On** |
+
+Cables:
+
+PA5X **MIDI OUT** → MODX **MIDI IN**  
+MODX **MIDI OUT** → Jupiter (or the next synth) **MIDI IN**
+
+With **MIDI Thru On**, notes arriving at MODX IN are copied to MODX OUT. The PA5X Chord channel (16) still arrives as channel 16 on the Jupiter. The MODX still *plays* those notes internally. The MODX keyboard itself is **not** sent out that jack while Thru is On.
+
+With **MIDI Thru Off**, OUT is only what the MODX *generates* (keys, Zones, arp MIDI Out). The PA5X will **not** reach the Jupiter.
+
+Keep the chain to two synths. If Thru feels late or messy, skip the daisy-chain: use a small MIDI thru/splitter from the PA5X so MODX and Jupiter each get their own copy.
+
+Do **not** also send PA5X Chord into the Jupiter by a second cable while Thru is On — that double-triggers.
+
 ---
 
 ## Part 2 — MODX M7 globals (do once)
@@ -224,6 +248,7 @@ Do this after the first stored Performance.
 | Right-hand PA5X playing also triggers MODX | Upper 1/2/3 still assigned on MIDI OUT | Set those tracks **Off** |
 | Arps will not run, or run at the wrong speed | MIDI Sync = MIDI but no clock from PA5X | Send clock from PA5X, or set MODX MIDI Sync = **Internal** |
 | Looking for Hybrid / MIDI I/O Mode | That menu is not on MODX M | Use MIDI I/O Channel + Keyboard Control + Tx/Rx Ch |
+| Jupiter (or next synth) silent on the chain | MIDI Thru Off, or MIDI IN/OUT = USB so Thru is hidden | MIDI IN/OUT = **MIDI**, **MIDI Thru** = **On** |
 
 ---
 
@@ -234,6 +259,7 @@ Do this after the first stored Performance.
 - [ ] PA5X MIDI OUT: Chord = **16**, other tracks Off on that port
 - [ ] PA5X MIDI Preset saved
 - [ ] PA5X MIDI OUT → MODX MIDI IN
+- [ ] Optional chain: MODX MIDI Thru **On**, MODX OUT → next synth IN
 - [ ] MODX MIDI I/O Channel = **1**
 - [ ] MODX Local Control = **On**
 - [ ] Optional: both instruments sharing MIDI clock
