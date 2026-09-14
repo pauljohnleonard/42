@@ -5,6 +5,7 @@ A setup guide for driving **Yamaha MODX M7** arpeggio and sequence Parts from **
 Print this or keep it open on a phone while you are at the keyboards.
 
 Related: [MODX-M7-Copy-Parts.md](MODX-M7-Copy-Parts.md) (how to pull one Part out of another Performance).
+Related: [PA5X-Live-Jam-Reference.md](PA5X-Live-Jam-Reference.md) (PA5X live jam: remixed Styles, Pads, Matrix Chord Sequences).
 
 ---
 
