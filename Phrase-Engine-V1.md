@@ -84,6 +84,74 @@ Capture can come from any input port. Output ports are named in a small config f
 
 ---
 
+## Playback brain: phrases over chord sequences
+
+Two clocks, one rewrite.
+
+| Clock | Job |
+|---|---|
+| **Phrase loop** | The captured riff (1 or 2 bars) repeats. Rhythm and velocities stay. |
+| **Chord sequence** | `Am \| F \| C \| G` (or live chords on the bus). Harmony changes underneath. |
+
+Each note-on in the loop: `out = rewrite(note, original_chord, current_chord, algo, wrap)`. Drums skip this (`none`). Chord MIDI out on 16 is just the current chord tones for MODX/Jupiter — not the phrase itself.
+
+The Pa does **two** steps, not one:
+
+1. **Chord Table** — pick which *recording* to use (they often recorded Cmaj **and** Cm). Closest quality wins.
+2. **NTT** — rewrite that recording toward the chord you actually want (Cmaj → Cmaj7, or Cmaj → F#m7).
+
+V1 can skip (1) and only do (2) from a single captured take. Quality jump later: capture maj **and** min of the same bass.
+
+### What NTT actually does
+
+Recorded in **Cmaj** (`C E G` as a mental triad; the riff may also have passing notes).
+
+**Parallel** — shift with the **root**, keep the riff’s shape, then stay inside **Wrap Around** (if a note would leave the instrument’s sweet octave, drop/raise it). Good for bass and lines.
+
+- **Root** — when the new chord needs extra tones (the ♭7 of a 7th chord), Korg **moves the old root** to that missing pitch. Cmaj (`C E G`) → C7: a `C` becomes nearest `Bb` → `C E G Bb` flavour.
+- **Fifth** — same trick but it moves the old **fifth** (`G` → `Bb`). Different voicing, same chord.
+- **No Transpose** (Parallel) — slide the whole shape to the new **key**, do not change quality. Intros that already contain a progression.
+
+**Fixed / Chord** — **voice-lead**: move as few notes as possible, stay near the original register, prefer **common tones**. Cmaj `C E G` → Am might keep `C E` and move `G` → `A`. Pads, piano, strings. Ignores Wrap Around.
+
+**Fixed / No Transpose** — do not follow chords. Drums use this idea without the name.
+
+When the chord changes **under a held note**, Pa **Trigger**: cut / retrigger / **repitch** (glide). V1: retrigger is enough.
+
+### A small rewrite we can actually code
+
+Treat each captured pitch as a **role** in the original chord, then realise that role in the new chord. Passing notes keep their offset from the nearest chord tone.
+
+```
+src, dst = Cmaj, Fmaj
+note C4 → role root → F4
+note E4 → role 3rd → A4
+note G4 → role 5th → C5
+note D4 → passing (+2 from C) → G4   # still a 9th-ish above new root
+then wrap into [low, high]
+```
+
+Maj → min: the **3rd** role becomes ♭3 (`E` → `Eb` if still in C). That is the whole point of not using naive “transpose by root interval” (which would leave a major third on a minor chord).
+
+### Alternatives for the brain (pick one per slot)
+
+| Brain | Idea | Use | Cost |
+|---|---|---|---|
+| **Root transpose only** | Add `dst.root - src.root` | Diatonic major-only, intros | Wrong 3rds on minor |
+| **Chord-tone roles** (above) | Map 1–3–5–7 then tensions | **V1 default** for bass/harm | Simple, musical |
+| **Korg-ish Parallel Root/Fifth** | Roles + “donor” pitch fills extensions | Closer to Pa Acc | Fiddly edge cases |
+| **Nearest chord tone** (Fixed) | Each note snaps to closest pitch in `dst` | Pads, stabs | Can flatten a melody |
+| **Scale quantize** | Fit to key/mode, not the triad | Hook / clarinet-ish lines | Off-chord on purpose |
+| **Chord variations** | Extra capture for min / 7 | When one take sounds dumb | More tapping |
+| **Bass grammar** | Force downbeat = root, keep rhythm | Safety net on ugly NTT | Less “your riff” |
+| **Do nothing** | `none` | Drums, percussion Pads | — |
+
+Do **not** start from a full Pa NTT clone or Guitar Mode. Three functions: `none`, `roles` (Parallel-ish), `nearest` (Fixed-ish). Wrap + retrigger. If a stolen Pa bass sounds wrong in F#m7, add a **min** variation, do not invent table 14.
+
+Libraries later if we want: a tiny chord-quality table in Python is enough. `music21` is a thesis, not a jam.
+
+---
+
 ## PA5X drums and Pads as the starter kit
 
 Factory Drum tracks and Pads are the best drummer you already own. V1 should **play along with them**, not replace them on day one.
@@ -281,7 +349,7 @@ Library (M7) and scenes (M8) are what we called V1 in conversation. They are use
 
 ## Done for V1
 
-- [ ] MIDI listen-only for capture (no Python thru while playing)
+- [ ] Playback rewrite: `none` / chord-tone **roles** / **nearest** (Fixed); wrap; retrigger on chord change
 - [ ] M1 chord bus + ch 16 out
 - [ ] M2 drum loop (tap **or** slave to Pa clock)
 - [ ] M3 bass NTT
