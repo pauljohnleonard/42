@@ -60,8 +60,44 @@ MIDI in/out on a **dedicated thread**. UI never blocks that thread.
 | Harm | 3 | Pad / stab |
 | Hook | 4 | Extra line |
 | Chord in (optional) | 1 | Keys that *set* the bus, not a slot |
+| PA5X Control (to Pa) | one IN channel | Start/stop, Variation/Fill PC, SongBook NRPN |
 
 Capture can come from any input port. Output ports are named in a small config file (`iac`, `midihub a`, …).
+
+---
+
+## PA5X drums and Pads as the starter kit
+
+Factory Drum tracks and Pads are the best drummer you already own. V1 should **play along with them**, not replace them on day one.
+
+There are two different tricks. Do not mix them up.
+
+### A — Pa stays the drummer (prefer this)
+
+Pa is **clock master**. Engine **slaves**. You pick a Style (mute Acc/Bass if the engine will play those roles). Pads fire on the Pa; they already follow tempo.
+
+| MIDI | What it actually does |
+|---|---|
+| Clock + Start/Stop from Pa | Engine bar 1 lines up with Style start. Capture bass/harm **on the grid**. |
+| Control channel **to** Pa IN | Program Change **104** = Play/Stop Player 1. **83–86** = Var 1–4. **87–90** = Fill. |
+| SongBook NRPN **to** Pa | Loads a **snapshot**: Style + the four Pads. Use **between** jams (same restart issue as live). |
+| Load an arbitrary Pad from the library by MIDI | Not a first-class message. Pads come **with** the Style/SongBook, or you hit PAD 1–4. |
+
+You do **not** need the engine to “load a Style” for this to work. Hand-select the Style, press Start, engine hears clock and records.
+
+**Play:** Pa drums + Pad 1 looping. Engine captures a bass phrase in time. Chord bus still drives MODX/plugins. Clarinet on top.
+
+### B — Steal the groove into a phrase (portable later)
+
+Turn **Sty Drum** (and maybe Perc) **on** MIDI OUT. Engine records 1–2 bars on ch 10, NTT = none. Then that phrase can drive a kit plugin when the Pa is in the case.
+
+Or: Style Edit → **Export SMF** and pull the Drum markers into the library — no realtime capture.
+
+Do **not** send that Drum MIDI into the MODX Chord path. Midihub already filters: Chord 16 to synths; drums only to the Mac.
+
+### Clock
+
+M6 is not “engine always master.” For a Pa jam: **Clock Source on the engine = MIDI from Pa**. Pa **Clock Send** on. When you unplug the Pa, engine is master (tap tempo / internal).
 
 ---
 
@@ -86,6 +122,8 @@ Hold a chord on the keyboard → bus shows `C`, `F#m7`, etc. Engine sends those 
 Arm drums, play 1 or 2 bars, capture, loop. Start / stop / mute. Length is in **bars**, not ticks you think about.
 
 **Play:** A tapped groove keeps going while you drink tea.
+
+**Pa variant:** Skip tapping. Slave to Pa clock, Start with the Style, leave drums on the Pa. M2 is then “engine knows bars”; the slot can stay empty.
 
 ### M3 — Bass slot + Parallel Root
 
@@ -113,9 +151,9 @@ This is the go/no-go. If this is not more fun than Pa Matrix + a factory Style, 
 
 ### M6 — Clock you can trust
 
-Fixed bar size, quantise capture to the loop, optional MIDI clock out so MODX arps / Live sync. Tap tempo.
+Fixed bar size, quantise capture to the loop. **Slave to PA5X clock** when the Pa is the drummer. Internal / tap / MIDI clock **out** when the Pa is away (plugins, MODX arps).
 
-**Play:** Slot loops stay with the click; a plugin arp locks if you want it.
+**Play:** Bass capture starts on bar 1 of a Pa Style; loops stay glued when you hit Fill.
 
 ### M7 — Phrase library
 
