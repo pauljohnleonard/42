@@ -193,6 +193,8 @@ Novel spaces come from **illegal** genomes (root not on 1, approaches that miss,
 
 Do **not** implement a rule editor, GA, or walking-bass engine before M5 is fun. Do **do**: store `rewrite: roles|nearest|none` as a named genome id so a later `genome.json` can replace it without rewriting the phrase library.
 
+Getting to the fun first is the point. A later rewrite of the player is cheap (AI, not evenings of your time). That is **not** a reason to build the cathedral in V1 — it is a reason not to fear a simple V1.
+
 ---
 
 ## PA5X drums and Pads as the starter kit
