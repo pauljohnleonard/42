@@ -41,7 +41,7 @@ Three NTT tables only: **none** (drums), **Parallel Root** (bass / lines), **Fix
 |---|---|
 | Language | Python 3 |
 | MIDI | `python-rtmidi` |
-| Phrase on disk | SMF + JSON sidecar (role, original chord, NTT, length in bars) |
+| Phrase on disk | SMF + JSON sidecar (role, original chord, NTT, length, **sound targets**) |
 | UI | Ugly is fine (terminal or one window) |
 | Clock | Engine is master; optional MIDI clock out |
 | Out | IAC (plugins) and/or Midihub DIN (hardware) |
@@ -94,6 +94,36 @@ Turn **Sty Drum** (and maybe Perc) **on** MIDI OUT. Engine records 1–2 bars on
 Or: Style Edit → **Export SMF** and pull the Drum markers into the library — no realtime capture.
 
 Do **not** send that Drum MIDI into the MODX Chord path. Midihub already filters: Chord 16 to synths; drums only to the Mac.
+
+### Sound targets (Pa kit vs local)
+
+Stolen MIDI is reusable **notes**. The *voice* is a separate pointer on the phrase.
+
+When you capture from the Pa, store the **Bank MSB / LSB / Program** that was on that track (the mixer already shows that trio under the Sound name). Playback:
+
+| Rig | Engine sends notes + that Bank/PC to… |
+|---|---|
+| Pa at home | PA5X MIDI IN on a channel assigned to a **Drum Kit / Pad / Acc sound** (Style **stopped**, Pa is a module). Same kit map = same experience. |
+| Mac on a train | **Fallback** on the phrase: IAC → Live drum rack / GM kit / a named plugin preset. |
+
+Config is just `output: pa5x` vs `output: local`. Same `.mid`, different port.
+
+Do **not** run Style player drums **and** module playback of the stolen phrase at once — double kit.
+
+Honest limit: Pa drum **note maps are not GM**. Fallback will be “a groove,” not “that factory kit,” unless you build one Live drum rack whose pads match the captured notes. Worth doing once for the kits you actually steal.
+
+```json
+{
+  "role": "drums",
+  "ntt": "none",
+  "sound": {
+    "pa5x": { "msb": 0, "lsb": 12, "program": 5, "channel": 10 },
+    "local": { "port": "iac", "channel": 10, "preset": "live-drum-rack-pa-kit" }
+  }
+}
+```
+
+Bass, harm, and stolen Pads use the same shape.
 
 ### Clock
 
