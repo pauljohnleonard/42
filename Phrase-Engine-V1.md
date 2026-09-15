@@ -93,6 +93,8 @@ Turn **Sty Drum** (and maybe Perc) **on** MIDI OUT. Engine records 1–2 bars on
 
 Or: Style Edit → **Export SMF** and pull the Drum markers into the library — no realtime capture.
 
+**Pads** use the same Export, from **Pad Edit**, not Style Edit. Cookbook below.
+
 Do **not** send that Drum MIDI into the MODX Chord path. Midihub already filters: Chord 16 to synths; drums only to the Mac.
 
 ### Sound targets (Pa kit vs local)
@@ -124,6 +126,30 @@ Honest limit: Pa drum **note maps are not GM**. Fallback will be “a groove,”
 ```
 
 Bass, harm, and stolen Pads use the same shape.
+
+### How to steal a Pad (MIDI + program)
+
+A Pad is a **one-track mini-Style**. Factory Pads are protected: Pad Edit makes a temp copy; you only **Save Pad** if you edited. Export does not require saving.
+
+**Sound (the program)**
+
+1. Home mixer (or Mixer button).
+2. **TRACK SELECT** until you are on **Keyboard / Pads**, not Style.
+3. Pad 1–4: the Sound name is on that strip.
+4. Under the name: **Bank Select MSB, LSB, Program Change**. Write those three numbers on the phrase JSON (`sound.pa5x`).
+
+**Notes (the groove)**
+
+1. Load the Style (or SongBook) so the four Pads you care about are the current set. Or pick a Pad from the Pad library onto one of the four slots first.
+2. `REC/EDIT` → **Pad Edit** → choose Pad 1, 2, 3, or 4.
+3. `MENU` → **Import/Export** → **Export SMF** → Execute. Same exporter as a Style; the file is SMF 0 with markers per Chord Variation.
+4. Optional check: Pad Edit → **Pad Type & Control** — Loop vs One Shot; if it is a Drum-type loop, engine NTT = **none**; if it follows chords, stamp original chord and use **Fixed** or **Parallel Root**.
+
+**Live capture (if you would rather not Export)**
+
+MIDI OUT Channels: set **Pad 1** (etc.) to a channel, fire the PAD button, record that stream. The mixer trio above is still the program — the Pa may not send Bank/PC every time you hit PAD.
+
+Then playback: same as stolen drums. Pa as module on a MIDI IN channel assigned to **Ply Pad 1** (or any channel that can hold that Sound), Style not also playing that Pad.
 
 ### Clock
 
@@ -205,9 +231,9 @@ One fill phrase per slot or one global fill slot. Trigger → plays once → bac
 
 ### M10 — Two outputs, one brain
 
-Config: Chord + parts to **IAC** (Mac portable) and/or **Midihub** (hardware). Same phrases.
+Config: Chord + parts to **IAC** (Mac portable) and/or **Midihub** (hardware). Same phrases. Each phrase has a **Pa sound** (Bank/PC) and a **local** fallback; `output: pa5x | local` picks the port.
 
-**Play:** Same scene on headphones in a hotel, then on MODX + Jupiter at home.
+**Play:** Stolen drum phrase on the Pa kit at home. Same file, Live drum rack, on the train. No double drums.
 
 ---
 
