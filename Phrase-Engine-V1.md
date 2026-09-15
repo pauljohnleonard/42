@@ -50,6 +50,8 @@ MIDI in/out on a **dedicated thread**. UI never blocks that thread.
 
 ### Latency (do not put Python in the playing path)
 
+**Budget:** live monitor path **under 10 ms**, **under 5 ms** if we can. Phrase playback can sit in the same band.
+
 The scary number is **software thru**: keyboard → Python → synth. That is extra delay on top of DIN (~1 ms per note-on) and whatever the sound engine adds (hardware: tiny; Live: the audio buffer).
 
 `python-rtmidi` is thin C++ under the hood. On a quiet thread, thru is often **1–5 ms**, which is playable. It gets ugly if thru runs on the GUI thread, the machine is busy, or the GC hiccups — then you feel a flap, not a constant lag.
@@ -279,7 +281,7 @@ Library (M7) and scenes (M8) are what we called V1 in conversation. They are use
 
 ## Done for V1
 
-- [ ] M0 echo
+- [ ] MIDI listen-only for capture (no Python thru while playing)
 - [ ] M1 chord bus + ch 16 out
 - [ ] M2 drum loop (tap **or** slave to Pa clock)
 - [ ] M3 bass NTT
