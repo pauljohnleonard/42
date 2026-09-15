@@ -31,7 +31,7 @@ Four **slots** (drums, bass, harm, hook) + a **chord bus** + a **phrase library*
 - Piano-roll editor
 - Running on the iPad (iPad = module or controller; brain = Mac)
 
-Three NTT tables only: **none** (drums), **Parallel Root** (bass / lines), **Fixed Chord** (pads / stabs). Hook defaults to none or Parallel Root — pick when we hear it.
+Three rewrite tables only: **none** (drums), **chord-tone roles** (Parallel-ish bass/lines), **nearest** (Fixed-ish pads). Hook defaults to none or roles.
 
 ---
 
@@ -149,6 +149,49 @@ Maj → min: the **3rd** role becomes ♭3 (`E` → `Eb` if still in C). That is
 Do **not** start from a full Pa NTT clone or Guitar Mode. Three functions: `none`, `roles` (Parallel-ish), `nearest` (Fixed-ish). Wrap + retrigger. If a stolen Pa bass sounds wrong in F#m7, add a **min** variation, do not invent table 14.
 
 Libraries later if we want: a tiny chord-quality table in Python is enough. `music21` is a thesis, not a jam.
+
+---
+
+## North star: evolvable players (not V1)
+
+A **chord symbol is not the harmonic context**. A walking bass wants **root on beat 1**, chord tones on other strong beats, passing and chromatic **approaches** into the *next* chord. The same pitch class is a different **role** at a different instant. Rhythm has the same story: density, syncopation, which 16ths are allowed to speak.
+
+That can become a textbook. The pitfall is we never ship four slots.
+
+**Direct the evolution, do not build it yet.** V1’s three rewrites are **degenerate genomes** (ignore meter, ignore next chord). The data model should still look like a player that *could* grow rules.
+
+### Generic rule space
+
+A **player genome** is a short list of weighted rules, not a walking-bass special case:
+
+`WHEN (context) → pick from (pitch set / rhythmic set)`
+
+**Context** (features, not essays): slot, chord (root + quality), optional key/scale, **metric class** (beat 1 / strong / weak / pickup), **next chord**, previous note.
+
+**Pitch actions:** root, chord-tone, scale-tone, chromatic approach to next root, keep captured role, rest.
+
+**Rhythm actions** (same shape): keep captured timing, thin to strong beats, fill 16ths, displace, rest.
+
+V1 `roles` = one rule: “always keep captured chord role.”  
+V1 `nearest` = “always snap to current chord.”  
+V1 `none` = “always keep pitch.”  
+Walking bass = a *library genome*: beat1→root, strong→chord-tone, else→approach. You never have to type that as Python `if` soup if it is just data.
+
+### Mutations and cross-breeding (how you *use* the software later)
+
+Operations on **phrases** and on **genomes**, same idea as biology:
+
+| Operation | Phrases | Genomes |
+|---|---|---|
+| **Mutate** | nudge a note, flip a rest, humanise | flip a condition, change an action, tweak weights |
+| **Crossover** | rhythm from A, pitches from B | first half of bass rules + second of pad rules |
+| **Keep** | the take that survived the jam | the genome that still sounds like music |
+
+Novel spaces come from **illegal** genomes (root not on 1, approaches that miss, clave against a swing bass). The software explores; you audition. No requirement to define “correct jazz” first.
+
+### Guard rail
+
+Do **not** implement a rule editor, GA, or walking-bass engine before M5 is fun. Do **do**: store `rewrite: roles|nearest|none` as a named genome id so a later `genome.json` can replace it without rewriting the phrase library.
 
 ---
 
@@ -349,7 +392,10 @@ Library (M7) and scenes (M8) are what we called V1 in conversation. They are use
 
 ## Done for V1
 
+- [ ] M0 echo
+- [ ] MIDI listen-only for capture (no Python thru while playing); monitor **<10 ms**, aim **<5 ms**
 - [ ] Playback rewrite: `none` / chord-tone **roles** / **nearest** (Fixed); wrap; retrigger on chord change
+- [ ] Rewrite stored as a **genome id** (so rules can grow later without breaking phrases)
 - [ ] M1 chord bus + ch 16 out
 - [ ] M2 drum loop (tap **or** slave to Pa clock)
 - [ ] M3 bass NTT
@@ -364,4 +410,6 @@ Library (M7) and scenes (M8) are what we called V1 in conversation. They are use
 - [ ] Steal Pad: Pad Edit → Export SMF + TRACK SELECT Pads for MSB/LSB/PC
 - [ ] Phrase JSON `sound.pa5x` and `sound.local` fallback
 
-V2 (prettier UI, more NTT tables, iPad as brain) is **after** that list, not in it.
+**After V1 (north star, not this list):** player genomes with meter + next-chord; mutate / crossover of phrases and genomes; rhythmic rule space. Do not start that until M5 is a jam.
+
+V2 UI / iPad-as-brain is also after this list.
