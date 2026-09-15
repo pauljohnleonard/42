@@ -7,7 +7,8 @@ Print this or keep it on a phone at the keyboard.
 Related:
 
 - [PA5X-MODX-M7-MIDI-Setup.md](PA5X-MODX-M7-MIDI-Setup.md) — PA5X chords driving MODX arps
-- [MODX-M7-Copy-Parts.md](MODX-M7-Copy-Parts.md) — stealing a Part from a MODX Performance
+- [MODX-M7-Copy-Parts.md](MODX-M7-Copy-Parts.md) — stealing a Part from another MODX Performance
+- [Phrase-Engine-V1.md](Phrase-Engine-V1.md) — optional software brain (phrases + NTT); not required for the Pa jam
 
 ---
 
