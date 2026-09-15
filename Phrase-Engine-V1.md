@@ -48,6 +48,22 @@ Three NTT tables only: **none** (drums), **Parallel Root** (bass / lines), **Fix
 
 MIDI in/out on a **dedicated thread**. UI never blocks that thread.
 
+### Latency (do not put Python in the playing path)
+
+The scary number is **software thru**: keyboard → Python → synth. That is extra delay on top of DIN (~1 ms per note-on) and whatever the sound engine adds (hardware: tiny; Live: the audio buffer).
+
+`python-rtmidi` is thin C++ under the hood. On a quiet thread, thru is often **1–5 ms**, which is playable. It gets ugly if thru runs on the GUI thread, the machine is busy, or the GC hiccups — then you feel a flap, not a constant lag.
+
+**V1 rule:** Python **listens**, it does not sit between your fingers and the sound.
+
+| What you are doing | Path |
+|---|---|
+| Play / monitor | Keyboard → synth **local** (or Midihub split to the module). You hear the box, not Python. |
+| Capture | Same MIDI **copied** to the Mac (Midihub extra OUT, or USB). Engine timestamps notes. No extra hop in the audio path. |
+| Phrase playback / NTT | Python **must** send those notes. That is a looped part, not your live touch. A few ms here is fine. |
+
+Do not build “live bass through NTT as you play” in V0. Capture, then the loop is rewritten. Portable plugins: Live’s buffer is usually the bigger lag; keep IAC, keep buffer modest.
+
 ---
 
 ## MIDI sketch (keep it boring)
