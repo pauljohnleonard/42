@@ -265,14 +265,17 @@ Library (M7) and scenes (M8) are what we called V1 in conversation. They are use
 
 - [ ] M0 echo
 - [ ] M1 chord bus + ch 16 out
-- [ ] M2 drum loop
+- [ ] M2 drum loop (tap **or** slave to Pa clock)
 - [ ] M3 bass NTT
 - [ ] M4 harm NTT
 - [ ] M5 four-slot clarinet jam
-- [ ] M6 clock
+- [ ] M6 clock (slave to Pa / internal)
 - [ ] M7 library
 - [ ] M8 scenes
 - [ ] M9 fill
-- [ ] M10 IAC and Midihub
+- [ ] M10 IAC and Midihub + `output: pa5x | local`
+- [ ] Steal Style drums: Export SMF + mixer MSB/LSB/PC
+- [ ] Steal Pad: Pad Edit → Export SMF + TRACK SELECT Pads for MSB/LSB/PC
+- [ ] Phrase JSON `sound.pa5x` and `sound.local` fallback
 
 V2 (prettier UI, more NTT tables, iPad as brain) is **after** that list, not in it.
