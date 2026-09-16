@@ -286,6 +286,37 @@ Then playback: same as stolen drums. Pa as module on a MIDI IN channel assigned 
 
 M6 is not “engine always master.” For a Pa jam: **Clock Source on the engine = MIDI from Pa**. Pa **Clock Send** on. When you unplug the Pa, engine is master (tap tempo / internal).
 
+### MODX M7 vs Pa: what MIDI can actually drive
+
+The Pa hides the **arranger** (Pad library, NTT, Style Copy). The MODX hides almost nothing of **its** groove engine, but that engine is **not** an arranger. Grooves = **Arps** + **Motion Sequences** + **Pattern** (printed MIDI). You **prepare** a User Performance; MIDI then runs it.
+
+| Want | MIDI | Catch |
+|---|---|---|
+| Load a whole sound/groove set | Bank Select + Program Change (see Performance **Property** for MSB/LSB/PC). **Live Set** slot: MSB **62**, LSB = page, PC = slot | Not a search of the arp catalog. Load **your** 16-slot page. |
+| Switch which groove is armed | **Scene CC** (Utility → MIDI I/O, default **92**). Values **0, 16, 32, 48, 64, 80, 96, 112** = Scenes 1–8. Scene can store Arp 1–8, Motion Seq 1–8, mix, Super Knob | You only get the **eight** Scenes you stored. |
+| Play the arp | **Note-on** on the arp Part channel (Chord **16** in our plan). **Hold** on the Part so clarinet jams do not drop | Master Arp On is a button; put On/Off in two Scenes if you need MIDI. |
+| Motion Sequence | Notes, or default **CC 89** trigger; clock like arps | Same: prepared in the Performance. |
+| Tempo lock | MIDI clock in (Pa master) | Sync = MIDI. |
+| Pattern (8 sections × 16 tracks) | Transport / sequencer control when clocked; Scene buttons pick section; Live Set can bind a Pattern to a slot | Play **starts the sequencer**, not the arp. Arp is notes. Pattern **prints** arp to MIDI if you record it. |
+| Super Knob | Default **CC 95** on ch 1 | Easy remote morph. |
+
+**Cannot** (same class of hole as Pa Pads): “load Arp type 4521 from the factory list” as one message. Put eight favourites in Arp Select and eight Scenes.
+
+**Discover state (SysEx dump, not `ls`)**
+
+MIDI does not give a directory listing of every Performance. Yamaha’s protocol is **dump this address**.
+
+- **Now playing:** dump the **edit buffer** → name, Parts, arps in the current Performance. There is still no simple “what MSB/LSB/PC is selected?”
+- **One known slot:** dump that Preset/User/Library Performance by index (you already know the number).
+- **Live Set:** dump a User Live Set bank/page → slot names. That is the closest thing to a list, and only for **your** Live Set, not the whole factory catalog.
+- Factory names live in the **Data List PDF**, or you walk dumps like the Editor does (slow, librarian work).
+
+V1: we keep **our** list (Live Set we built, Property MSB/LSB on the phrase). Dump current **name** later if the UI should confirm “yes, that’s Analog Motion.” Do not build a MODX librarian before M5.
+
+**Steal MODX grooves into the engine:** record Pattern (arp becomes MIDI events) or Arp MIDI Out, then the phrase is yours — same idea as Pa Export SMF.
+
+For the jam: Pa = drums/Pads; MODX = **Scene-remote arp module** on Chord 16. Engine does not need to operate the MODX catalog.
+
 ---
 
 ## First milestones (in order)
