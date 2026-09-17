@@ -1,6 +1,24 @@
 {
+  "devices": {
+    "pa5x": {
+      "port": "Midihub A",
+      "label": "Korg PA5X"
+    },
+    "modx": {
+      "port": "Midihub B",
+      "label": "Yamaha MODX M7"
+    },
+    "iac-in": {
+      "port": "IAC Driver Bus 1",
+      "label": "IAC Bus 1"
+    },
+    "iac-out": {
+      "port": "IAC Driver Bus 2",
+      "label": "IAC Bus 2"
+    }
+  },
   "midi": {
-    "input": "IAC Driver Bus 1",
-    "output": "IAC Driver Bus 2"
+    "input": "pa5x",
+    "output": "modx"
   }
 }

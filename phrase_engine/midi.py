@@ -12,7 +12,7 @@ import time
 from dataclasses import dataclass
 from typing import Callable, Protocol
 
-from phrase_engine.notes import channel_of, format_message, is_channel_voice
+from phrase_engine.notes import channel_of, format_message, is_channel_voice, is_realtime
 
 VIRTUAL_IN = "PhraseEngine IN"
 VIRTUAL_OUT = "PhraseEngine OUT"
@@ -77,6 +77,19 @@ def resolve_port(ports: list[str], query: str) -> tuple[int, str]:
         return partial[0]
     if len(partial) > 1:
         raise PortError(_ambiguous(q, [n for _, n in partial]))
+
+    tokens = lowered.split()
+    if len(tokens) >= 2:
+        first, last = tokens[0], tokens[-1]
+        bookends = [
+            (i, name)
+            for i, name in enumerate(ports)
+            if (parts := name.lower().split()) and parts[0] == first and parts[-1] == last
+        ]
+        if len(bookends) == 1:
+            return bookends[0]
+        if len(bookends) > 1:
+            raise PortError(_ambiguous(q, [n for _, n in bookends]))
     raise PortError(_missing(q, ports))
 
 
@@ -90,13 +103,22 @@ def _missing(query: str, ports: list[str]) -> str:
     return f"No MIDI port matching {query!r}. Available:\n{listed}"
 
 
-def format_port_list(inputs: list[str], outputs: list[str]) -> str:
-    def block(title: str, names: list[str]) -> str:
+def format_port_list(
+    inputs: list[str],
+    outputs: list[str],
+    *,
+    annotate=None,
+) -> str:
+    def line(i: int, name: str, which: str) -> str:
+        extra = annotate(name, which) if annotate is not None else ""
+        return f"  [{i}] {name}{extra}"
+
+    def block(title: str, names: list[str], which: str) -> str:
         if not names:
             return f"{title}:\n  (none)"
-        return f"{title}:\n" + "\n".join(f"  [{i}] {n}" for i, n in enumerate(names))
+        return f"{title}:\n" + "\n".join(line(i, n, which) for i, n in enumerate(names))
 
-    return f"{block('Inputs', inputs)}\n{block('Outputs', outputs)}"
+    return f"{block('Inputs', inputs, 'in')}\n{block('Outputs', outputs, 'out')}"
 
 
 class MidiEngine:
@@ -109,6 +131,8 @@ class MidiEngine:
         echo: bool = False,
         channel: int | None = None,
         on_message: Callable[[MidiMessage], None] | None = None,
+        on_tick: Callable[[], None] | None = None,
+        on_clock: Callable[[MidiMessage], None] | None = None,
     ) -> None:
         if channel is not None and not 1 <= channel <= 16:
             raise MidiError("channel must be 1–16")
@@ -116,6 +140,8 @@ class MidiEngine:
         self.echo = echo
         self.channel = channel
         self._on_message = on_message
+        self._on_tick = on_tick
+        self._on_clock = on_clock
         self._incoming: queue.SimpleQueue[MidiMessage | None] = queue.SimpleQueue()
         self._stop = threading.Event()
         self._thread = threading.Thread(target=self._run, name="midi", daemon=True)
@@ -157,19 +183,28 @@ class MidiEngine:
         )
 
     def _run(self) -> None:
+        timeout = 0.01 if self._on_tick is not None else 0.05
         while not self._stop.is_set():
             try:
-                item = self._incoming.get(timeout=0.05)
+                item = self._incoming.get(timeout=timeout)
             except queue.Empty:
+                if self._on_tick is not None:
+                    self._on_tick()
                 continue
             if item is None:
                 break
             self._handle(item)
+            if self._on_tick is not None:
+                self._on_tick()
 
     def _handle(self, msg: MidiMessage) -> None:
         if not msg.data:
             return
         status = msg.status
+        if is_realtime(status):
+            if self._on_clock is not None:
+                self._on_clock(msg)
+            return
         if not is_channel_voice(status):
             return
         if self.channel is not None and channel_of(status) != self.channel:

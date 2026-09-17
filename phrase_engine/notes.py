@@ -33,6 +33,11 @@ def is_channel_voice(status: int) -> bool:
     return 0x80 <= status <= 0xEF
 
 
+def is_realtime(status: int) -> bool:
+    """MIDI clock / start / continue / stop."""
+    return status in (0xF8, 0xFA, 0xFB, 0xFC)
+
+
 def format_message(data: tuple[int, ...] | list[int]) -> str:
     if not data:
         return "(empty)"

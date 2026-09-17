@@ -23,9 +23,14 @@ def test_resolve_ambiguous():
         resolve_port(ports, "IAC")
 
 
-def test_resolve_missing():
-    with pytest.raises(PortError, match="No MIDI port matching"):
-        resolve_port(["IAC Driver Bus 1"], "MODX")
+def test_resolve_midihub_letter():
+    ports = [
+        "Midihub MH-0CNQEC3 A",
+        "Midihub MH-0CNQEC3 B",
+        "IAC Driver Bus 1",
+    ]
+    assert resolve_port(ports, "Midihub A")[1] == "Midihub MH-0CNQEC3 A"
+    assert resolve_port(ports, "Midihub B")[1] == "Midihub MH-0CNQEC3 B"
 
 
 def test_echo_copies_note_on_dedicated_thread():

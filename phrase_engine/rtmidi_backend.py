@@ -57,7 +57,7 @@ class RtMidiBackend:
     def open_input(self, name: str | None, *, virtual: bool = False) -> str:
         midi = _new_port(self._rtmidi.MidiIn, "input")
         try:
-            midi.ignore_types(sysex=True, timing=True, active_sense=True)
+            midi.ignore_types(sysex=True, timing=False, active_sense=True)
             if virtual:
                 resolved = name or VIRTUAL_IN
                 midi.open_virtual_port(resolved)

@@ -2,7 +2,13 @@ from pathlib import Path
 
 import pytest
 
-from phrase_engine.config import ConfigError, load_config
+from phrase_engine.config import (
+    ConfigError,
+    guess_device,
+    load_config,
+    pick_defaults,
+    suggest_devices,
+)
 from phrase_engine.notes import format_message, note_name
 
 
@@ -26,8 +32,24 @@ def test_format_cc_and_pc():
 
 def test_load_example_config():
     cfg = load_config(Path("config.example.json"))
-    assert cfg.midi.input == "IAC Driver Bus 1"
-    assert cfg.midi.output == "IAC Driver Bus 2"
+    assert cfg.midi.input == "pa5x"
+    assert cfg.midi.output == "modx"
+    assert cfg.lookup("pa5x") == "Midihub A"
+    assert cfg.device_map()["modx"].label == "Yamaha MODX M7"
+
+
+def test_guess_midihub_rig():
+    pa = guess_device("Midihub MH-0CNQEC3 A")
+    mx = guess_device("Midihub MH-0CNQEC3 B")
+    assert pa is not None and pa.alias == "pa5x" and pa.label == "Korg PA5X"
+    assert mx is not None and mx.alias == "modx"
+    devices = suggest_devices(
+        ["Midihub MH-0CNQEC3 A", "IAC Driver Bus 1"],
+        ["Midihub MH-0CNQEC3 B", "IAC Driver Bus 2"],
+    )
+    defaults = pick_defaults(devices)
+    assert defaults.input == "pa5x"
+    assert defaults.output == "modx"
 
 
 def test_load_config_rejects_garbage(tmp_path: Path):
