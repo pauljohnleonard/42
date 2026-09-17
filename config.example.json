@@ -1,0 +1,6 @@
+{
+  "midi": {
+    "input": "IAC Driver Bus 1",
+    "output": "IAC Driver Bus 2"
+  }
+}

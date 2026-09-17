@@ -296,6 +296,13 @@ Each milestone is done when you can **play** the test, not when the code exists.
 
 Python lists MIDI ports, echoes notes in → out.
 
+```bash
+python -m phrase_engine ports
+python -m phrase_engine echo --in "IAC Driver Bus 1" --out "IAC Driver Bus 2"
+```
+
+Use two IAC buses (or MODX in → a *different* plugin/module out). Same port in and out is a MIDI loop; the engine refuses that. Echo is the **port test**, not the jam path — live playing stays local. `listen` prints notes and sends nothing.
+
 **Play:** Press a key on the MODX (or IAC from Live). Hear it on a plugin or another module.
 
 ### M1 — Chord bus
@@ -368,19 +375,17 @@ Config: Chord + parts to **IAC** (Mac portable) and/or **Midihub** (hardware). S
 
 ---
 
-## Suggested repo layout (when code starts)
+## Repo layout
 
 ```
-phrase-engine/
-  README.md          (how to run)
-  config.example.json
-  engine/            (clock, chord bus, ntt, slots)
-  midi/              (rtmidi thread)
-  phrases/           (user library, gitignored except examples)
-  scenes/
+phrase_engine/       MIDI thread + CLI (`python -m phrase_engine`)
+tests/
+config.example.json
+phrases/             user library, gitignored except .gitkeep
+scenes/
 ```
 
-Milestones M0–M2 can live as a single `python -m phrase_engine` before the folder gets fancy.
+M0 is `ports` / `echo` / `listen`. Clock, chord bus, NTT, slots land here as later modules — not before M0 actually talks.
 
 ---
 
